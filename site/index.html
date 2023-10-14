@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;" lang="en"><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="INTUITIVE">
+    <meta name="description" content="">
+    <title>CS 180 Proj 4</title>
+    <link rel="stylesheet" href="nicepage.css" media="screen">
+<link rel="stylesheet" href="style.css" media="screen">
+    <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
+    <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
+    <meta name="generator" content="Nicepage 5.17.1, nicepage.com">
+    <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
+    <script type="application/ld+json">{
+		"@context": "http://schema.org",
+		"@type": "Organization",
+		"name": "Site1"
+}</script>
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="CS 180 Proj 4">
+    <meta property="og:description" content="">
+    <meta property="og:type" content="website">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta data-intl-tel-input-cdn-path="intlTelInput/"></head>
+  <body class="u-body u-xl-mode" data-lang="en">
+    <section class="u-align-center u-clearfix u-gradient u-section-1" src="" id="sec-4bf2">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <h1 class="u-align-center u-text u-text-default-lg u-text-default-md u-text-default-sm u-text-default-xl u-title u-text-1"> CS 180 Proj 4: ​AutoStitching Photo Mosaics</h1>
+        <p class="u-large-text u-text u-text-default u-text-variant u-text-2">Aayush Gupta</p>
+      </div>
+    </section>
+    <section class="u-clearfix u-section-2" id="sec-9125">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <div class="fr-view u-align-center u-clearfix u-rich-text u-text u-text-1">
+          <h3 style="text-align: left;">Part A: Image Warping and Mosaicing</h3>
+          <h4 style="text-align: left;">
+            <span style="font-weight: 700;">Recover homographies</span>
+          </h4>
+          <p style="text-align: left;">To warp the images into alignment, I first needed to determine the transformation between the images. This transformation is a homography - a 3x3 matrix <span style="font-style: italic;">H</span> where the lower right corner element is a scaling factor and is set to 1. The homography can be computed by selecting correspondence points in the images and then setting up a system of equations. For each corresponding pair of points (x,y) and (x', y'), we can represent them in homogeneous coordinates and get the following:
+          </p>
+        </div>
+        <img class="u-image u-image-contain u-image-default u-image-1" src="images_in/equation_1.jpg" alt="" data-image-width="319" data-image-height="134">
+        <div class="fr-view u-align-center u-clearfix u-rich-text u-text u-text-2">
+          <p style="text-align: left;">Multiplying the terms and then dividing by w gives two equations:</p>
+        </div>
+        <img class="u-image u-image-contain u-image-default u-image-2" src="images_in/equation_2.jpg" alt="" data-image-width="362" data-image-height="99">
+        <div class="fr-view u-align-center u-clearfix u-rich-text u-text u-text-3">
+          <p style="text-align: left;">Rearranging the terms and combining all of the n pairs of equations gives us a system of 2n equations with 8 unknowns. This means we can recover <span style="font-style: italic;">H</span> using least squares when given 4 pairs of correspondence points, but I used more to account for the noise from hand-selecting the points and taking the pictures without a tripod.
+          </p>
+        </div>
+        <img class="u-image u-image-contain u-image-default u-image-3" src="images_in/equation_3.jpg" alt="" data-image-width="681" data-image-height="266">
+      </div>
+    </section>
+    <section class="u-align-center u-clearfix u-section-3" id="sec-69ff">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <div class="fr-view u-align-center u-clearfix u-rich-text u-text u-text-1">
+          <h4 style="text-align: left;">
+            <span style="font-weight: 700;">Warp the Images<br>
+            </span>
+          </h4>
+          <p style="text-align: left;">To warp my images using the computed homography <span style="font-style: italic;">H</span>, I used inverse warping and Nearest-Neighbor Interpolation, similar to Project 3. To determine the size of the warped image, I had to make different considerations based on whether I was rectifying or creating mosaics. All images were taken using a phone camera.
+          </p>
+        </div>
+        <div class="fr-view u-align-center u-clearfix u-rich-text u-text u-text-2">
+          <h4 style="text-align: left;">
+            <span style="font-weight: 700;">Image Rectification</span>
+          </h4>
+          <p style="text-align: left;">To rectify the images, I chose points along a planar surface in the original image, and I chose the second set of points so that warping it would make the surface frontal-parallel.&nbsp;</p>
+          <p style="text-align: left;">When rectifying, the corners of the rectified image mapped to very large negative values in the original plane and there was no second image. As such, I set the rectified image to have the same size as the normal image, but points that mapped beyond the original image plane when inverse warping were set to 0.</p>
+          <h5 style="text-align: left;">Rectification Examples:</h5>
+        </div>
+        <div class="u-list u-list-1">
+          <div class="u-repeater u-repeater-1">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-1">
+                <img class="u-image u-image-contain u-image-default u-image-1" src="part_a/part_2/vlsb_corr.png" alt="" data-image-width="512" data-image-height="389">
+                <p class="u-text u-text-default u-text-3">Original with Correspondence Points</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-2">
+                <img class="u-image u-image-contain u-image-default u-image-2" src="part_a/part_2/vlsb_final.jpg" alt="" data-image-width="4032" data-image-height="3024">
+                <p class="u-text u-text-default u-text-4">Rectified</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-3">
+                <img class="u-image u-image-contain u-image-default u-image-3" src="part_a/part_2/bldg_corr.png" alt="" data-image-width="512" data-image-height="389">
+                <p class="u-text u-text-default u-text-5"> Original with Correspondence Points</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-4">
+                <img class="u-image u-image-contain u-image-default u-image-4" src="part_a/part_2/bldg.jpg" alt="" data-image-width="4032" data-image-height="3024">
+                <p class="u-text u-text-default u-text-6">Rectified</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-5">
+                <img class="u-image u-image-contain u-image-default u-image-5" src="part_a/part_2/macbook_corr.png" alt="" data-image-width="512" data-image-height="389">
+                <p class="u-text u-text-default u-text-7"> Original with Correspondence Points</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-6">
+                <img class="u-image u-image-contain u-image-default u-image-6" src="part_a/part_2/macbook.jpg" alt="" data-image-width="4032" data-image-height="3024">
+                <p class="u-text u-text-default u-text-8">Rectified</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="u-align-center u-clearfix u-section-4" id="carousel_13fb">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <div class="fr-view u-align-center u-clearfix u-rich-text u-text u-text-1">
+          <h4 id="isPasted" style="text-align: left;">
+            <span style="font-weight: 700;">Blending to a Mosaic</span>
+          </h4>
+          <p style="text-align: left;">I created mosaics using sets of 3 images, warping the right image to the center, and then the left image to the combined image. I exanded the image canvas as images were combined together. For the warping, I first forward warped the corners to the target image to get a polygon in the target image plane. Then, I performed inverse warping on this polygon to interpolate the colors from the original image.</p>
+          <p style="text-align: left;">To blend the images together, I experimented with two different methods. The first was simply adding the images together by using binary masks derived from the polygon of the warped image in the target image (center image) plane. As expected, the result was hard seams at most of the image edges. There also turned out to be differences in color, even though I had the exposure lock on while taking photos.</p>
+          <p style="text-align: left;">The other was blending using a Laplacian pyramid. To perform this, we need a mutually exclusive mask. To compute the mutually exlcusive mask for a pair of images, I first used a distance transform on the image masks, giving masks D_1 and D_2, representing how close each pixel was to zeros (the black background). The binary mask was then calculated as D_1 &gt; D_2, marking ones where the pixels would be taken from image 1 and vice versa. Finally, the images were blended similar to Project 2. To have the blending complete in a reasonable amount of time, the images were downsampled by a factor of 4. This approach blended the images together much better, although it created some artifacts at image corners.</p>
+          <h5 style="text-align: left;">Examples:</h5>
+        </div>
+        <h5 class="u-align-center u-text u-text-2">VLSB</h5>
+        <div class="u-list u-list-1">
+          <div class="u-repeater u-repeater-1">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-1">
+                <img class="u-image u-image-contain u-image-default u-image-1" src="part_a/part_3/vlsb3.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-3">Left View</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-2">
+                <img class="u-image u-image-contain u-image-default u-image-2" src="part_a/part_3/vlsb2.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-4">Center View</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-3">
+                <img class="u-image u-image-contain u-image-default u-image-3" src="part_a/part_3/vlsb1.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-5">Right View</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="u-list u-list-2">
+          <div class="u-repeater u-repeater-2">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-valign-top u-container-layout-4">
+                <img class="u-image u-image-contain u-image-default u-image-4" src="part_a/part_3/vlsb_alpha_mosaic.jpg" alt="" data-image-width="5500" data-image-height="5500">
+                <p class="u-text u-text-default u-text-6">Naive Blending</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-valign-top u-container-layout-5">
+                <img class="u-image u-image-contain u-image-default u-image-5" src="part_a/part_3/vlsb_ds_4_6_8_xor.jpg" alt="" data-image-width="5500" data-image-height="5500">
+                <p class="u-text u-text-default u-text-7">Center View</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h5 class="u-align-center u-text u-text-8">Hearst Mining Circle</h5>
+        <div class="u-list u-list-3">
+          <div class="u-repeater u-repeater-3">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-6">
+                <img class="u-image u-image-contain u-image-default u-image-6" src="part_a/part_3/evans1.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-9">Left View</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-7">
+                <img class="u-image u-image-contain u-image-default u-image-7" src="part_a/part_3/evans3.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-10">Center View</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-8">
+                <img class="u-image u-image-contain u-image-default u-image-8" src="part_a/part_3/evans5.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-11">Right View</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="u-list u-list-4">
+          <div class="u-repeater u-repeater-4">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-9">
+                <img class="u-image u-image-contain u-image-default u-image-9" src="part_a/part_3/evans_alpha_mosaic.jpg" alt="" data-image-width="6700" data-image-height="6000">
+                <p class="u-text u-text-default u-text-12">Naive Blending</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-10">
+                <img class="u-image u-image-contain u-image-default u-image-10" src="part_a/part_3//evans_ds_4_6_8_xor.jpg" alt="" data-image-width="6700" data-image-height="6000">
+                <p class="u-text u-text-default u-text-13">Center View</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h5 class="u-align-center u-text u-text-14">View from Garin Mountains</h5>
+        <div class="u-list u-list-5">
+          <div class="u-repeater u-repeater-5">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-11">
+                <img class="u-image u-image-contain u-image-default u-image-11" src="part_a/part_3//garin1.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-15">Left View</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-12">
+                <img class="u-image u-image-contain u-image-default u-image-12" src="part_a/part_3//garin2.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-16">Center View</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-13">
+                <img class="u-image u-image-contain u-image-default u-image-13" src="part_a/part_3//garin3.jpg" alt="" data-image-width="3024" data-image-height="4032">
+                <p class="u-text u-text-default u-text-17">Right View</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="u-list u-list-6">
+          <div class="u-repeater u-repeater-6">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-valign-top u-container-layout-14">
+                <img class="u-image u-image-contain u-image-default u-image-14" src="part_a/part_3//garin_alpha_mosaic.jpg" alt="" data-image-width="6700" data-image-height="6100">
+                <p class="u-text u-text-default u-text-18">Naive Blending</p>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-valign-top u-container-layout-15">
+                <img class="u-image u-image-contain u-image-default u-image-15" src="part_a/part_3//garin_ds_4_6_8_xor.jpg" alt="" data-image-width="6700" data-image-height="6100">
+                <p class="u-text u-text-default u-text-19">Center View</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="u-clearfix u-section-5" id="carousel_5587">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <div class="u-border-3 u-border-grey-dark-1 u-line u-line-horizontal u-line-1"></div>
+        <div class="fr-view u-align-center u-clearfix u-rich-text u-text u-text-1">
+          <h4 style="text-align: left;">
+            <span style="font-weight: 700;">What I Learned</span>
+          </h4>
+          <p style="text-align: left;">The coolest thing I learned from this part was how images can be warped through transformations to give different perspectives of the same image and how they can reveal interesting details that would be hard to see normally.</p>
+        </div>
+      </div>
+    </section>
+</body></html>
